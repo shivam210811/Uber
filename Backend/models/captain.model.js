@@ -1,86 +1,91 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-
+const mongoose = require('mongoose')
+const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 
 const captainSchema = new mongoose.Schema({
-    fullName:{
-        firstName:{
-            type:String,
-            required:true,
-            minlength:[3, "FirstName must be 3 characters or long"]
+    fullName: {
+        firstName: {
+            type: String,
+            required: true,
+            minlength: [ 3, 'Firstname must be at least 3 characters long' ],
         },
-        lastName:{
-            type:String,
-            minlength:[3, "FirstName must be 3 characters or long"]
+        lastName: {
+            type: String,
+            minlength: [ 3, 'Lastname must be at least 3 characters long' ],
         }
     },
-    email:{
-        type:String,
-        required:true,
-        unqique:true,
-        lowerCase: true,
-        match:[/^|S+@|S+|.|S+$/, 'Please enter a valid Email']
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+        lowercase: true,
+        match: [ /^\S+@\S+\.\S+$/, 'Please enter a valid email' ]
     },
-    password:{
-        type:String,
-        required:true,
-        select:false
+    password: {
+        type: String,
+        required: true,
+        select: false,
     },
-    socketId:{
-        type:String
+    socketId: {
+        type: String,
     },
-    status:{
-        type:String,
-        enum:['active', 'inactive'],
-        default:'inactive'
+
+    status: {
+        type: String,
+        enum: [ 'active', 'inactive' ],
+        default: 'inactive',
     },
-    vehicle:{
-        color:{
-             type:String,
-            required:true,
-            minlength:[3, "color must be 3 characters or long"] 
+
+    vehicle: {
+        color: {
+            type: String,
+            required: true,
+            minlength: [ 3, 'Color must be at least 3 characters long' ],
         },
-        plate:{
-              type:String,
-            required:true,
-            minlength:[3, "plate must be 3 characters or long"]
+        plate: {
+            type: String,
+            required: true,
+            minlength: [ 3, 'Plate must be at least 3 characters long' ],
         },
-        capacity:{
-            type:Number,
-            required:true,
-            minlength:[1, "Capacity must be atleast 1"]
+        capacity: {
+            type: Number,
+            required: true,
+            min: [ 1, 'Capacity must be at least 1' ],
         },
-        vehicleType:{
-              type:String,
-            required:true,
-            enum:['car', 'bike', 'auto']
+        vehicleType: {
+            type: String,
+            required: true,
+            enum: [ 'car', 'motorCycle', 'auto' ],
+        }
+    },
+
+    location: {
+        ltd: {
+            type: Number,
         },
-        location:{
-            lat:{
-                type:Number,
-                
-            },
-            lng:{
-                type:Number,
-            }
+        lng: {
+            type: Number,
         }
     }
 })
 
-captainSchema.methods.generateAuthToken = function(){
-    const toekn = jwt.sign({_id: this._id}, process.env.JWT_SECRET, {expiresIn: '24h'})
-    return toekn;
+
+captainSchema.methods.generateAuthToken = function () {
+    const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
+    return token;
 }
 
-captainSchema.methods.comparePassword = async function (password){
+
+captainSchema.methods.comparePassword = async function (password) {
     return await bcrypt.compare(password, this.password);
 }
 
-captainSchema.statics.hashedPassword  = async function (password){
+
+captainSchema.statics.hashPassword = async function (password) {
     return await bcrypt.hash(password, 10);
 }
 
+const captainModel = mongoose.model('captain', captainSchema)
 
-const captainModel  = mongoose.model('captain', captainSchema);
+
 module.exports = captainModel;
